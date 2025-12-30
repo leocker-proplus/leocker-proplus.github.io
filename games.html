@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>leocker 贪吃蛇（点击连续移动版）</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+        body {
+            background: #f0f2f5;
+            padding: 2rem 1rem;
+        }
+        .game-container {
+            max-width: 500px;
+            margin: 0 auto;
+            text-align: center;
+        }
+        h1 {
+            color: #2d3748;
+            margin-bottom: 1.5rem;
+            font-size: 2rem;
+        }
+        .record-display {
+            font-size: 1.2rem;
+            color: #2b6cb0;
+            margin-bottom: 1rem;
+        }
+        #game-canvas {
+            border: 3px solid #2b6cb0;
+            border-radius: 8px;
+            margin: 0 auto 1rem;
+            background: #fff;
+            max-width: 100%;
+        }
+        .btn-group {
+            margin: 1rem 0;
+        }
+        .btn {
+            padding: 0.8rem 1.5rem;
+            border: none;
+            border-radius: 8px;
+            background: #2b6cb0;
+            color: #fff;
+            cursor: pointer;
+            margin: 0 0.5rem;
+            font-size: 1rem;
+            transition: background 0.2s ease;
+        }
+        .btn:hover {
+            background: #2c5282;
+        }
+        .control-panel {
+            margin: 1.5rem auto;
+            max-width: 200px;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+        }
+        .control-btn {
+            width: 60px;
+            height: 60px;
+            border-radius: 8px;
+            background: #2b6cb0;
+            color: #fff;
+            font-size: 20px;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            touch-action: manipulation;
+            user-select: none;
+        }
+        .control-btn:hover {
+            background: #2c5282;
+        }
+        .empty {
+            background: transparent;
+        }
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0,0,0,0.5);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 10;
+        }
+        .modal-content {
+            background: #fff;
+            padding: 2rem;
+            border-radius: 12px;
+            text-align: center;
+            min-width: 250px;
+        }
+        .modal h2 {
+            margin-bottom: 1rem;
+        }
+        .modal p {
+            font-size: 1.1rem;
+            margin-bottom: 1.5rem;
+        }
+        .win-title {
+            color: #48bb78;
+        }
+        .over-title {
+            color: #e53e3e;
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <h1>贪吃蛇</h1>
+        <div class="record-display" id="snake-record">最高得分：0</div>
+        <canvas id="game-canvas" width="400" height="400"></canvas>
+        <div class="btn-group">
+            <button class="btn" id="start-btn" onclick="startGame()">开始游戏</button>
+            <button class="btn" onclick="restartGame()">重新开始</button>
+        </div>
+        <div class="control-panel">
+            <div class="empty"></div>
+            <button class="control-btn" onclick="setDir('up')">↑</button>
+            <div class="empty"></div>
+            <button class="control-btn" onclick="setDir('left')">←</button>
+            <div class="empty"></div>
+            <button class="control-btn" onclick="setDir('right')">→</button>
+            <div class="empty"></div>
+            <button class="control-btn" onclick="setDir('down')">↓</button>
+            <div class="empty"></div>
+        </div>
+    </div>
+
+    <!-- 结果弹窗 -->
+    <div class="modal" id="result-modal">
+        <div class="modal-content">
+            <h2 id="modal-title" class="over-title">Game Over</h2>
+            <p id="modal-text">你的得分：0</p>
+            <button class="btn" onclick="closeModal()">关闭弹窗</button>
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('game-canvas');
+        const ctx = canvas.getContext('2d');
+        const recordDisplay = document.getElementById('snake-record');
+        const startBtn = document.getElementById('start-btn');
+        const resultModal = document.getElementById('result-modal');
+        const modalTitle = document.getElementById('modal-title');
+        const modalText = document.getElementById('modal-text');
+
+        let snake, food, currentDir, isGameStart, moveInterval;
+        const gridSize = 20;
+        const cellSize = canvas.width / gridSize;
+        const moveSpeed = 150; // 移动间隔ms，越小越快
+        let snakeHighScore = localStorage.getItem('snakeHighScore') || 0;
+
+        // 初始化游戏
+        function initGame() {
+            snake = [{ x: 10, y: 10 }];
+            generateFood();
+            currentDir = 'right';
+            isGameStart = false;
+            clearInterval(moveInterval);
+            startBtn.textContent = '开始游戏';
+            startBtn.disabled = false;
+            updateRecordDisplay();
+            drawGame();
+        }
+
+        // 更新最高记录显示
+        function updateRecordDisplay() {
+            recordDisplay.textContent = `最高得分：${snakeHighScore}`;
+        }
+
+        // 生成不与蛇身重叠的食物
+        function generateFood() {
+            let newFood;
+            do {
+                newFood = {
+                    x: Math.floor(Math.random() * gridSize),
+                    y: Math.floor(Math.random() * gridSize)
+                };
+            } while (snake.some(seg => seg.x === newFood.x && seg.y === newFood.y));
+            food = newFood;
+        }
+
+        // 绘制游戏画面
+        function drawGame() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            // 画蛇
+            snake.forEach((seg, i) => {
+                ctx.fillStyle = i === 0 ? '#2b6cb0' : '#38b2ac';
+                ctx.fillRect(seg.x * cellSize, seg.y * cellSize, cellSize - 1, cellSize - 1);
+            });
+            // 画食物
+            ctx.fillStyle = '#e53e3e';
+            ctx.fillRect(food.x * cellSize, food.y * cellSize, cellSize - 1, cellSize - 1);
+        }
+
+        // 蛇移动逻辑
+        function moveSnake() {
+            const head = { ...snake[0] };
+            switch (currentDir) {
+                case 'up': head.y -= 1; break;
+                case 'down': head.y += 1; break;
+                case 'left': head.x -= 1; break;
+                case 'right': head.x += 1; break;
+            }
+            snake.unshift(head);
+
+            // 吃食物判断
+            if (head.x === food.x && head.y === food.y) {
+                generateFood();
+                // 通关判断
+                if (snake.length === gridSize * gridSize) {
+                    showModal(true, snake.length - 1);
+                    stopMove();
+                    return;
+                }
+            } else {
+                snake.pop();
+            }
+
+            // 撞墙/撞自己判断
+            if (head.x < 0 || head.x >= gridSize || head.y < 0 || head.y >= gridSize ||
+                snake.slice(1).some(seg => seg.x === head.x && seg.y === head.y)) {
+                showModal(false, snake.length - 1);
+                stopMove();
+                return;
+            }
+
+            drawGame();
+        }
+
+        // 开始移动
+        function startMove() {
+            clearInterval(moveInterval);
+            moveInterval = setInterval(moveSnake, moveSpeed);
+        }
+
+        // 停止移动
+        function stopMove() {
+            clearInterval(moveInterval);
+        }
+
+        // 点击方向键设置方向并保持移动
+        function setDir(dir) {
+            if (!isGameStart) return;
+            // 禁止反向
+            if ((dir === 'up' && currentDir === 'down') ||
+                (dir === 'down' && currentDir === 'up') ||
+                (dir === 'left' && currentDir === 'right') ||
+                (dir === 'right' && currentDir === 'left')) {
+                return;
+            }
+            currentDir = dir;
+            startMove(); // 点击后直接启动/保持移动
+        }
+
+        // 键盘控制：点击按键（keydown）设置方向
+        document.addEventListener('keydown', (e) => {
+            if (!isGameStart) return;
+            switch (e.key) {
+                case 'ArrowUp': setDir('up'); break;
+                case 'ArrowDown': setDir('down'); break;
+                case 'ArrowLeft': setDir('left'); break;
+                case 'ArrowRight': setDir('right'); break;
+            }
+        });
+
+        // 显示结果弹窗
+        function showModal(isWin, score) {
+            if (isWin) {
+                modalTitle.textContent = '恭喜通关！';
+                modalTitle.className = 'win-title';
+            } else {
+                modalTitle.textContent = 'Game Over';
+                modalTitle.className = 'over-title';
+            }
+            modalText.textContent = `你的得分：${score}`;
+            // 更新最高记录
+            if (score > snakeHighScore) {
+                snakeHighScore = score;
+                localStorage.setItem('snakeHighScore', snakeHighScore);
+                updateRecordDisplay();
+                modalText.textContent += '  新纪录！';
+            }
+            resultModal.style.display = 'flex';
+        }
+
+        // 关闭弹窗
+        function closeModal() {
+            resultModal.style.display = 'none';
+        }
+
+        // 开始游戏
+        function startGame() {
+            if (isGameStart) return;
+            isGameStart = true;
+            startBtn.textContent = '游戏进行中';
+            startBtn.disabled = true;
+            startMove(); // 开始后默认按初始方向移动
+        }
+
+        // 重新开始游戏
+        function restartGame() {
+            isGameStart = false;
+            stopMove();
+            initGame();
+        }
+
+        // 页面加载初始化
+        window.onload = initGame;
+    </script>
+</body>
+</html>
