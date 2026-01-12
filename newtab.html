@@ -83,8 +83,8 @@
             justify-content: center;
             width: 100%;
             max-width: 1000px;
-            min-width: 300px; /* 新增：设置最小宽度，适配小窗口 */
-            padding: 0 1rem; /* 新增：左右内边距，防止内容贴边 */
+            min-width: 280px;
+            padding: 0 1rem;
             z-index: 1;
         }
         /* 时钟样式：核心修复小窗显示问题，多档位响应式字号 */
@@ -95,8 +95,8 @@
             text-shadow: var(--text-shadow);
             text-align: center;
             transition: all 0.3s ease;
-            width: 100%; /* 新增：宽度100%，配合文字换行 */
-            word-break: keep-all; /* 新增：保持数字连在一起，不拆分 */
+            width: 100%;
+            word-break: keep-all;
         }
         /* 搜索框样式：Liquid Glass 质感 */
         .search-box {
@@ -143,16 +143,16 @@
             z-index: 2;
             text-shadow: var(--text-shadow);
         }
-        /* 小组件区域：网格布局 */
+        /* 小组件区域：仅一行3列或三行1列，移除2列布局 */
         .widget-group {
             display: grid;
-            grid-template-columns: repeat(3, 1fr);
+            grid-template-columns: repeat(3, 1fr); /* 大屏默认一行3列 */
             gap: 1.5rem;
             width: 100%;
-            max-width: 800px;
+            max-width: 900px;
             margin-bottom: 2rem;
         }
-        /* 小组件通用样式：Liquid Glass 质感 */
+        /* 小组件通用样式：自动撑满宽度，移除最小宽度限制 */
         .widget {
             background: var(--widget-bg);
             backdrop-filter: blur(12px);
@@ -161,7 +161,7 @@
             padding: 1.2rem;
             box-shadow: var(--glass-shadow);
             transition: all 0.3s ease;
-            min-width: 200px;
+            width: 100%; /* 自动撑满网格列宽 */
         }
         .widget:hover {
             transform: translateY(-3px);
@@ -421,14 +421,17 @@
             background: var(--btn-hover);
             border-color: var(--text);
         }
-        /* 响应式适配：多档位优化时钟字号，彻底解决小窗显示问题 */
-        @media (max-width: 800px) {
+        /* 响应式适配：仅保留 一行3列 / 三行1列，移除2列布局 */
+        @media (max-width: 700px) {
+            .widget-group {
+                grid-template-columns: 1fr; /* 小屏直接切换为三行1列 */
+                gap: 1rem;
+                max-width: 400px;
+            }
             .clock { font-size: 5rem; }
-            .widget-group { grid-template-columns: repeat(2, 1fr); }
         }
         @media (max-width: 600px) {
             .clock { font-size: 4rem; }
-            .widget-group { grid-template-columns: 1fr; max-width: 300px; }
             .shortcut-card { width: 80px; height: 80px; }
             .setting-btn, .source-code-btn { padding: 0.6rem 1rem; font-size: 0.9rem; }
             .bottom-btns { bottom: 15px; padding: 0 15px; }
@@ -437,11 +440,11 @@
             .setting-panel h2 { font-size: 1.5rem; }
         }
         @media (max-width: 400px) {
-            .clock { font-size: 3rem; } /* 超小窗口再缩小时钟 */
+            .clock { font-size: 3rem; }
             .content-container { min-width: 280px; }
         }
         @media (max-width: 320px) {
-            .clock { font-size: 2.5rem; } /* 极限小窗口最终适配 */
+            .clock { font-size: 2.5rem; }
         }
     </style>
 </head>
