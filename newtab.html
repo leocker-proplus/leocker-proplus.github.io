@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>新标签页</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+        body {
+            background: #1a202c;
+            color: #fff;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem 1rem;
+            position: relative;
+        }
+        /* 语言切换按钮（悬浮左上角） */
+        .lang-switch-btn {
+            position: fixed;
+            left: 20px;
+            top: 20px;
+            padding: 0.6rem 1rem;
+            background: rgba(43, 108, 176, 0.8);
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            z-index: 99;
+            font-size: 0.9rem;
+        }
+        .lang-switch-btn:hover {
+            background: #2b6cb0;
+            transform: translateY(-3px);
+            box-shadow: 0 4px 12px rgba(43, 108, 176, 0.5);
+        }
+        /* 数字时钟样式 */
+        .clock {
+            font-size: 6rem;
+            font-weight: bold;
+            margin-bottom: 2rem;
+            text-shadow: 0 0 20px rgba(43, 108, 176, 0.5);
+        }
+        /* 搜索框样式 */
+        .search-box {
+            width: 100%;
+            max-width: 600px;
+            margin-bottom: 3rem;
+            position: relative;
+        }
+        #search-input {
+            width: 100%;
+            padding: 1rem 1.5rem;
+            border: none;
+            border-radius: 50px;
+            font-size: 1rem;
+            background: rgba(255, 255, 255, 0.1);
+            color: #fff;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+        #search-input::placeholder {
+            color: #a0aec0;
+        }
+        #search-input:focus {
+            background: rgba(255, 255, 255, 0.15);
+            box-shadow: 0 0 0 3px rgba(43, 108, 176, 0.3);
+        }
+        .search-btn {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: #a0aec0;
+            font-size: 1.2rem;
+            cursor: pointer;
+        }
+        /* 快捷入口样式 */
+        .shortcut-group {
+            display: flex;
+            gap: 1.5rem;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin-bottom: 2rem;
+        }
+        .shortcut-card {
+            width: 120px;
+            height: 120px;
+            border-radius: 16px;
+            background: rgba(255, 255, 255, 0.1);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+            color: #fff;
+            transition: all 0.3s ease;
+        }
+        .shortcut-card:hover {
+            background: rgba(255, 255, 255, 0.15);
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+        }
+        .shortcut-icon {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+        }
+        .shortcut-text {
+            font-size: 0.9rem;
+            color: #a0aec0;
+        }
+        /* 底部 by GitHub */
+        .footer {
+            font-size: 1rem;
+            color: #a0aec0;
+            margin-top: auto;
+        }
+        /* 查看源代码按钮（悬浮右下角） */
+        .source-code-btn {
+            position: fixed;
+            right: 20px;
+            bottom: 20px;
+            padding: 0.8rem 1.2rem;
+            background: rgba(43, 108, 176, 0.8);
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            z-index: 99;
+        }
+        .source-code-btn:hover {
+            background: #2b6cb0;
+            transform: translateY(-3px);
+            box-shadow: 0 4px 12px rgba(43, 108, 176, 0.5);
+        }
+        /* 响应式适配 */
+        @media (max-width: 600px) {
+            .clock {
+                font-size: 4rem;
+            }
+            .shortcut-card {
+                width: 100px;
+                height: 100px;
+            }
+            .source-code-btn, .lang-switch-btn {
+                padding: 0.6rem 1rem;
+                font-size: 0.9rem;
+            }
+            .lang-switch-btn {
+                left: 15px;
+                top: 15px;
+            }
+            .source-code-btn {
+                right: 15px;
+                bottom: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 语言切换按钮 -->
+    <button class="lang-switch-btn" id="lang-switch">English</button>
+
+    <!-- 数字时钟 -->
+    <div class="clock" id="digital-clock">00:00:00</div>
+
+    <!-- 搜索框（必应搜索） -->
+    <div class="search-box">
+        <input type="text" id="search-input" placeholder="输入内容按回车搜索...">
+        <button class="search-btn" onclick="search()">🔍</button>
+    </div>
+
+    <!-- 快捷入口 -->
+    <div class="shortcut-group">
+        <a href="index.html" class="shortcut-card">
+            <div class="shortcut-icon">🏠</div>
+            <div class="shortcut-text" data-lang="home">我的主站</div>
+        </a>
+        <a href="games.html" class="shortcut-card">
+            <div class="shortcut-icon">🎮</div>
+            <div class="shortcut-text" data-lang="games">游戏厅</div>
+        </a>
+        <a href="https://github.com/leocker-proplus" target="_blank" class="shortcut-card">
+            <div class="shortcut-icon">💻</div>
+            <div class="shortcut-text" data-lang="github">GitHub</div>
+        </a>
+        <a href="https://cn.bing.com" target="_blank" class="shortcut-card">
+            <div class="shortcut-icon">📚</div>
+            <div class="shortcut-text" data-lang="bing">必应</div>
+        </a>
+    </div>
+
+    <!-- 底部 by GitHub -->
+    <div class="footer" data-lang="by-github">
+        <p>by GitHub</p>
+    </div>
+
+    <!-- 查看源代码按钮（跳转到GitHub仓库） -->
+    <a href="https://github.com/leocker-proplus/leocker-proplus.github.io" target="_blank" class="source-code-btn" data-lang="source-code">
+        查看源代码
+    </a>
+
+    <script>
+        // 语言配置
+        const langConfig = {
+            zh: {
+                placeholder: "输入内容按回车搜索...",
+                home: "我的主站",
+                games: "游戏厅",
+                github: "GitHub",
+                bing: "必应",
+                by-github: "by GitHub",
+                source-code: "查看源代码",
+                switch-btn: "English"
+            },
+            en: {
+                placeholder: "Enter content and press Enter to search...",
+                home: "My Homepage",
+                games: "Game Hall",
+                github: "GitHub",
+                bing: "Bing",
+                by-github: "by GitHub",
+                source-code: "View Source Code",
+                switch-btn: "中文"
+            }
+        };
+
+        // 获取当前语言（本地存储记忆，默认中文）
+        let currentLang = localStorage.getItem('newtabLang') || 'zh';
+        const langSwitchBtn = document.getElementById('lang-switch');
+        const searchInput = document.getElementById('search-input');
+        const clockEl = document.getElementById('digital-clock');
+
+        // 切换语言函数
+        function switchLang() {
+            currentLang = currentLang === 'zh' ? 'en' : 'zh';
+            localStorage.setItem('newtabLang', currentLang);
+            updateLangContent();
+        }
+
+        // 更新页面语言内容
+        function updateLangContent() {
+            const config = langConfig[currentLang];
+            // 更新搜索框占位符
+            searchInput.placeholder = config.placeholder;
+            // 更新切换按钮文字
+            langSwitchBtn.textContent = config.switch-btn;
+            // 更新所有带data-lang属性的元素
+            document.querySelectorAll('[data-lang]').forEach(el => {
+                const key = el.getAttribute('data-lang');
+                if (config[key]) {
+                    el.textContent = config[key];
+                }
+            });
+            // 更新页面lang属性
+            document.documentElement.lang = currentLang;
+        }
+
+        // 数字时钟更新
+        function updateClock() {
+            const now = new Date();
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            const seconds = String(now.getSeconds()).padStart(2, '0');
+            clockEl.textContent = `${hours}:${minutes}:${seconds}`;
+        }
+
+        // 搜索功能（必应搜索）
+        function search() {
+            const keyword = searchInput.value.trim();
+            if (keyword) {
+                window.open(`https://cn.bing.com/search?q=${encodeURIComponent(keyword)}`, '_blank');
+                searchInput.value = '';
+            }
+        }
+
+        // 事件监听
+        langSwitchBtn.addEventListener('click', switchLang);
+        searchInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') search();
+        });
+
+        // 初始化：先更语言，再启动时钟（每秒更新）
+        updateLangContent();
+        updateClock();
+        setInterval(updateClock, 1000);
+    </script>
+</body>
+</html>
