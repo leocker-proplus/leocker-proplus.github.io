@@ -11,9 +11,47 @@
             box-sizing: border-box;
             font-family: Arial, sans-serif;
         }
+        /* 模式变量定义：亮色/暗色/壁纸/极简 */
+        body.light {
+            --bg: #f5f7fa;
+            --text: #2d3748;
+            --glass-bg: rgba(255, 255, 255, 0.8);
+            --glass-border: rgba(226, 232, 240, 0.8);
+            --glass-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+            --text-shadow: none;
+            --btn-hover: #e2e8f0;
+        }
+        body.dark {
+            --bg: #1a202c;
+            --text: #f7fafc;
+            --glass-bg: rgba(45, 55, 72, 0.8);
+            --glass-border: rgba(75, 85, 99, 0.8);
+            --glass-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+            --text-shadow: 0 0 8px rgba(0, 0, 0, 0.5);
+            --btn-hover: #4a5568;
+        }
+        body.wallpaper {
+            --bg: transparent;
+            --text: #ffffff;
+            --glass-bg: rgba(255, 255, 255, 0.15);
+            --glass-border: rgba(255, 255, 255, 0.2);
+            --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            --text-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+            --btn-hover: rgba(255, 255, 255, 0.2);
+        }
+        body.minimal {
+            --bg: #ffffff;
+            --text: #1a202c;
+            --glass-bg: #ffffff;
+            --glass-border: #e2e8f0;
+            --glass-shadow: none;
+            --text-shadow: none;
+            --btn-hover: #f5f7fa;
+        }
+        /* 基础样式 */
         body {
-            background: #1a202c;
-            color: #fff;
+            background: var(--bg);
+            color: var(--text);
             min-height: 100vh;
             display: flex;
             flex-direction: column;
@@ -21,13 +59,34 @@
             justify-content: center;
             padding: 2rem 1rem;
             position: relative;
+            overflow: hidden;
+            transition: all 0.5s ease;
+        }
+        /* 壁纸模式背景图 */
+        .dynamic-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 120%;
+            height: 120%;
+            background: url('https://picsum.photos/id/1018/1920/1080') no-repeat center center;
+            background-size: cover;
+            filter: blur(4px);
+            z-index: -2;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+        }
+        body.wallpaper .dynamic-bg {
+            opacity: 1;
         }
         /* 数字时钟样式 */
         .clock {
             font-size: 6rem;
             font-weight: bold;
             margin-bottom: 2rem;
-            text-shadow: 0 0 20px rgba(43, 108, 176, 0.5);
+            text-shadow: var(--text-shadow);
+            z-index: 1;
+            transition: all 0.5s ease;
         }
         /* 搜索框样式 */
         .search-box {
@@ -35,6 +94,7 @@
             max-width: 600px;
             margin-bottom: 3rem;
             position: relative;
+            z-index: 1;
         }
         #search-input {
             width: 100%;
@@ -42,17 +102,21 @@
             border: none;
             border-radius: 50px;
             font-size: 1rem;
-            background: rgba(255, 255, 255, 0.1);
-            color: #fff;
+            background: var(--glass-bg);
+            backdrop-filter: blur(12px);
+            color: var(--text);
             outline: none;
-            transition: all 0.3s ease;
+            border: 1px solid var(--glass-border);
+            box-shadow: var(--glass-shadow);
+            transition: all 0.5s ease;
         }
         #search-input::placeholder {
-            color: #a0aec0;
+            color: var(--text);
+            opacity: 0.7;
         }
         #search-input:focus {
-            background: rgba(255, 255, 255, 0.15);
-            box-shadow: 0 0 0 3px rgba(43, 108, 176, 0.3);
+            border-color: var(--text);
+            opacity: 0.9;
         }
         .search-btn {
             position: absolute;
@@ -61,69 +125,166 @@
             transform: translateY(-50%);
             background: none;
             border: none;
-            color: #a0aec0;
+            color: var(--text);
             font-size: 1.2rem;
             cursor: pointer;
+            z-index: 2;
+            text-shadow: var(--text-shadow);
         }
-        /* 快捷入口样式 */
+        /* 快捷入口样式（极简模式隐藏） */
         .shortcut-group {
             display: flex;
             gap: 1.5rem;
             flex-wrap: wrap;
             justify-content: center;
             margin-bottom: 2rem;
+            z-index: 1;
+            transition: all 0.5s ease;
+        }
+        body.minimal .shortcut-group {
+            display: none;
         }
         .shortcut-card {
             width: 120px;
             height: 120px;
             border-radius: 16px;
-            background: rgba(255, 255, 255, 0.1);
+            background: var(--glass-bg);
+            backdrop-filter: blur(12px);
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
             text-decoration: none;
-            color: #fff;
+            color: var(--text);
+            border: 1px solid var(--glass-border);
+            box-shadow: var(--glass-shadow);
             transition: all 0.3s ease;
         }
         .shortcut-card:hover {
-            background: rgba(255, 255, 255, 0.15);
             transform: translateY(-5px);
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+            background: var(--btn-hover);
+            border-color: var(--text);
+            opacity: 0.9;
         }
         .shortcut-icon {
             font-size: 2.5rem;
             margin-bottom: 0.5rem;
+            text-shadow: var(--text-shadow);
         }
         .shortcut-text {
             font-size: 0.9rem;
-            color: #a0aec0;
+            text-shadow: var(--text-shadow);
         }
-        /* 底部 by GitHub */
+        /* 底部 by GitHub（极简模式隐藏） */
         .footer {
             font-size: 1rem;
-            color: #a0aec0;
             margin-top: auto;
+            z-index: 1;
+            text-shadow: var(--text-shadow);
+            transition: all 0.5s ease;
         }
-        /* 查看源代码按钮（悬浮右下角） */
-        .source-code-btn {
+        body.minimal .footer {
+            display: none;
+        }
+        /* 功能按钮：设置 + 源代码 */
+        .bottom-btns {
             position: fixed;
-            right: 20px;
             bottom: 20px;
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            padding: 0 20px;
+            z-index: 99;
+        }
+        .setting-btn, .source-code-btn {
             padding: 0.8rem 1.2rem;
-            background: rgba(43, 108, 176, 0.8);
-            color: #fff;
-            border: none;
+            background: var(--glass-bg);
+            backdrop-filter: blur(10px);
+            color: var(--text);
+            border: 1px solid var(--glass-border);
             border-radius: 8px;
             cursor: pointer;
             text-decoration: none;
             transition: all 0.3s ease;
-            z-index: 99;
+            box-shadow: var(--glass-shadow);
         }
-        .source-code-btn:hover {
-            background: #2b6cb0;
+        .setting-btn:hover, .source-code-btn:hover {
+            background: var(--btn-hover);
             transform: translateY(-3px);
-            box-shadow: 0 4px 12px rgba(43, 108, 176, 0.5);
+            border-color: var(--text);
+        }
+        /* 设置面板（默认隐藏，淡入淡出） */
+        .setting-panel {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            z-index: 100;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: all 0.5s ease;
+        }
+        .setting-panel.show {
+            opacity: 1;
+            pointer-events: all;
+        }
+        .setting-panel h2 {
+            font-size: 2rem;
+            margin-bottom: 2rem;
+            text-shadow: var(--text-shadow);
+        }
+        .mode-list {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        .mode-item {
+            width: 180px;
+            height: 120px;
+            border-radius: 12px;
+            background: var(--glass-bg);
+            border: 2px solid var(--glass-border);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: var(--glass-shadow);
+        }
+        .mode-item.active {
+            border-color: var(--text);
+            background: var(--btn-hover);
+        }
+        .mode-item:hover {
+            transform: translateY(-5px);
+            border-color: var(--text);
+        }
+        .mode-icon {
+            font-size: 1.8rem;
+            margin-bottom: 0.5rem;
+        }
+        .close-setting {
+            margin-top: 1rem;
+            padding: 0.8rem 2rem;
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 8px;
+            color: var(--text);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .close-setting:hover {
+            background: var(--btn-hover);
+            border-color: var(--text);
         }
         /* 响应式适配 */
         @media (max-width: 600px) {
@@ -134,16 +295,30 @@
                 width: 100px;
                 height: 100px;
             }
-            .source-code-btn {
+            .setting-btn, .source-code-btn {
                 padding: 0.6rem 1rem;
                 font-size: 0.9rem;
-                right: 15px;
+            }
+            .bottom-btns {
                 bottom: 15px;
+                padding: 0 15px;
+            }
+            .mode-list {
+                grid-template-columns: 1fr;
+            }
+            .mode-item {
+                width: 220px;
+            }
+            .setting-panel h2 {
+                font-size: 1.5rem;
             }
         }
     </style>
 </head>
-<body>
+<body class="wallpaper">
+    <!-- 壁纸模式背景图 -->
+    <div class="dynamic-bg"></div>
+
     <!-- 数字时钟 -->
     <div class="clock" id="digital-clock">00:00:00</div>
 
@@ -178,37 +353,625 @@
         <p>by GitHub</p>
     </div>
 
-    <!-- 查看源代码按钮（跳转到GitHub仓库） -->
-    <a href="https://github.com/leocker-proplus/leocker-proplus.github.io" target="_blank" class="source-code-btn">
-        查看源代码
-    </a>
+    <!-- 底部功能按钮 -->
+    <div class="bottom-btns">
+        <button class="setting-btn" onclick="openSetting()">设置</button>
+        <a href="https://github.com/leocker-proplus/leocker-proplus.github.io" target="_blank" class="source-code-btn">查看源代码</a>
+    </div>
+
+    <!-- 设置面板 -->
+    <div class="setting-panel" id="settingPanel">
+        <h2>选择显示模式</h2>
+        <div class="mode-list">
+            <div class="mode-item" onclick="setMode('light')" id="modeLight">
+                <div class="mode-icon">☀️</div>
+                <div class="mode-name">亮色模式</div>
+            </div>
+            <div class="mode-item" onclick="setMode('dark')" id="modeDark">
+                <div class="mode-icon">🌙</div>
+                <div class="mode-name">暗色模式</div>
+            </div>
+            <div class="mode-item active" onclick="setMode('wallpaper')" id="modeWallpaper">
+                <div class="mode-icon">🖼️</div>
+                <div class="mode-name">壁纸模式</div>
+            </div>
+            <div class="mode-item" onclick="setMode('minimal')" id="modeMinimal">
+                <div class="mode-icon">⚡</div>
+                <div class="mode-name">极简模式</div>
+            </div>
+        </div>
+        <button class="close-setting" onclick="closeSetting()">关闭</button>
+    </div>
 
     <script>
+        // 获取元素
+        const body = document.body;
+        const settingPanel = document.getElementById('settingPanel');
+        const modeItems = {
+            light: document.getElementById('modeLight'),
+            dark: document.getElementById('modeDark'),
+            wallpaper: document.getElementById('modeWallpaper'),
+            minimal: document.getElementById('modeMinimal')
+        };
+        const clockEl = document.getElementById('digital-clock');
+        const searchInput = document.getElementById('search-input');
+
+        // 初始化模式（从本地存储读取，默认壁纸模式）
+        function initMode() {
+            const savedMode = localStorage.getItem('newtabMode') || 'wallpaper';
+            setMode(savedMode, false); // false表示不重新存储
+        }
+
+        // 设置显示模式
+        function setMode(mode, isSave = true) {
+            // 更新body类名
+            body.className = mode;
+            // 更新激活状态
+            Object.keys(modeItems).forEach(key => {
+                modeItems[key].classList.remove('active');
+            });
+            modeItems[mode].classList.add('active');
+            // 更新搜索框占位符
+            const placeholders = {
+                light: '输入内容按回车搜索...',
+                dark: '输入内容按回车搜索...',
+                wallpaper: '输入内容按回车搜索...',
+                minimal: '搜索...'
+            };
+            searchInput.placeholder = placeholders[mode];
+            // 本地存储记忆
+            if (isSave) {
+                localStorage.setItem('newtabMode', mode);
+            }
+            // 极简模式调整时钟大小
+            if (mode === 'minimal') {
+                clockEl.style.fontSize = '7rem';
+            } else {
+                clockEl.style.fontSize = window.innerWidth <= 600 ? '4rem' : '6rem';
+            }
+        }
+
+        // 打开设置面板
+        function openSetting() {
+            settingPanel.classList.add('show');
+        }
+
+        // 关闭设置面板
+        function closeSetting() {
+            settingPanel.classList.remove('show');
+        }
+
+        // 点击面板外部关闭设置
+        document.addEventListener('click', (e) => {
+            if (e.target === settingPanel) {
+                closeSetting();
+            }
+        });
+
         // 数字时钟更新
         function updateClock() {
             const now = new Date();
             const hours = String(now.getHours()).padStart(2, '0');
             const minutes = String(now.getMinutes()).padStart(2, '0');
             const seconds = String(now.getSeconds()).padStart(2, '0');
-            document.getElementById('digital-clock').textContent = `${hours}:${minutes}:${seconds}`;
+            clockEl.textContent = `${hours}:${minutes}:${seconds}`;
         }
-        // 初始化时钟并每秒更新
-        updateClock();
-        setInterval(updateClock, 1000);
 
         // 搜索功能（必应搜索）
         function search() {
-            const input = document.getElementById('search-input');
-            const keyword = input.value.trim();
+            const keyword = searchInput.value.trim();
             if (keyword) {
                 window.open(`https://cn.bing.com/search?q=${encodeURIComponent(keyword)}`, '_blank');
-                input.value = '';
+                searchInput.value = '';
             }
         }
-        // 按回车触发搜索
-        document.getElementById('search-input').addEventListener('keydown', (e) => {
+
+        // 响应式调整时钟大小
+        function resizeClock() {
+            if (body.className !== 'minimal') {
+                clockEl.style.fontSize = window.innerWidth <= 600 ? '4rem' : '6rem';
+            }
+        }
+
+        // 事件监听
+        searchInput.addEventListener('keydown', (e) => {
             if (e.key === 'Enter') search();
         });
+        window.addEventListener('resize', resizeClock);
+
+        // 初始化
+        initMode();
+        updateClock();
+        setInterval(updateClock, 1000);
+        resizeClock();
+    </script>
+</body>
+</html><!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>新标签页</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+        /* 模式变量定义：亮色/暗色/壁纸/极简 */
+        body.light {
+            --bg: #f5f7fa;
+            --text: #2d3748;
+            --glass-bg: rgba(255, 255, 255, 0.8);
+            --glass-border: rgba(226, 232, 240, 0.8);
+            --glass-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+            --text-shadow: none;
+            --btn-hover: #e2e8f0;
+        }
+        body.dark {
+            --bg: #1a202c;
+            --text: #f7fafc;
+            --glass-bg: rgba(45, 55, 72, 0.8);
+            --glass-border: rgba(75, 85, 99, 0.8);
+            --glass-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+            --text-shadow: 0 0 8px rgba(0, 0, 0, 0.5);
+            --btn-hover: #4a5568;
+        }
+        body.wallpaper {
+            --bg: transparent;
+            --text: #ffffff;
+            --glass-bg: rgba(255, 255, 255, 0.15);
+            --glass-border: rgba(255, 255, 255, 0.2);
+            --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            --text-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+            --btn-hover: rgba(255, 255, 255, 0.2);
+        }
+        body.minimal {
+            --bg: #ffffff;
+            --text: #1a202c;
+            --glass-bg: #ffffff;
+            --glass-border: #e2e8f0;
+            --glass-shadow: none;
+            --text-shadow: none;
+            --btn-hover: #f5f7fa;
+        }
+        /* 基础样式 */
+        body {
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem 1rem;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.5s ease;
+        }
+        /* 壁纸模式背景图 */
+        .dynamic-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 120%;
+            height: 120%;
+            background: url('https://picsum.photos/id/1018/1920/1080') no-repeat center center;
+            background-size: cover;
+            filter: blur(4px);
+            z-index: -2;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+        }
+        body.wallpaper .dynamic-bg {
+            opacity: 1;
+        }
+        /* 数字时钟样式 */
+        .clock {
+            font-size: 6rem;
+            font-weight: bold;
+            margin-bottom: 2rem;
+            text-shadow: var(--text-shadow);
+            z-index: 1;
+            transition: all 0.5s ease;
+        }
+        /* 搜索框样式 */
+        .search-box {
+            width: 100%;
+            max-width: 600px;
+            margin-bottom: 3rem;
+            position: relative;
+            z-index: 1;
+        }
+        #search-input {
+            width: 100%;
+            padding: 1rem 1.5rem;
+            border: none;
+            border-radius: 50px;
+            font-size: 1rem;
+            background: var(--glass-bg);
+            backdrop-filter: blur(12px);
+            color: var(--text);
+            outline: none;
+            border: 1px solid var(--glass-border);
+            box-shadow: var(--glass-shadow);
+            transition: all 0.5s ease;
+        }
+        #search-input::placeholder {
+            color: var(--text);
+            opacity: 0.7;
+        }
+        #search-input:focus {
+            border-color: var(--text);
+            opacity: 0.9;
+        }
+        .search-btn {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: var(--text);
+            font-size: 1.2rem;
+            cursor: pointer;
+            z-index: 2;
+            text-shadow: var(--text-shadow);
+        }
+        /* 快捷入口样式（极简模式隐藏） */
+        .shortcut-group {
+            display: flex;
+            gap: 1.5rem;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin-bottom: 2rem;
+            z-index: 1;
+            transition: all 0.5s ease;
+        }
+        body.minimal .shortcut-group {
+            display: none;
+        }
+        .shortcut-card {
+            width: 120px;
+            height: 120px;
+            border-radius: 16px;
+            background: var(--glass-bg);
+            backdrop-filter: blur(12px);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+            color: var(--text);
+            border: 1px solid var(--glass-border);
+            box-shadow: var(--glass-shadow);
+            transition: all 0.3s ease;
+        }
+        .shortcut-card:hover {
+            transform: translateY(-5px);
+            background: var(--btn-hover);
+            border-color: var(--text);
+            opacity: 0.9;
+        }
+        .shortcut-icon {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+            text-shadow: var(--text-shadow);
+        }
+        .shortcut-text {
+            font-size: 0.9rem;
+            text-shadow: var(--text-shadow);
+        }
+        /* 底部 by GitHub（极简模式隐藏） */
+        .footer {
+            font-size: 1rem;
+            margin-top: auto;
+            z-index: 1;
+            text-shadow: var(--text-shadow);
+            transition: all 0.5s ease;
+        }
+        body.minimal .footer {
+            display: none;
+        }
+        /* 功能按钮：设置 + 源代码 */
+        .bottom-btns {
+            position: fixed;
+            bottom: 20px;
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            padding: 0 20px;
+            z-index: 99;
+        }
+        .setting-btn, .source-code-btn {
+            padding: 0.8rem 1.2rem;
+            background: var(--glass-bg);
+            backdrop-filter: blur(10px);
+            color: var(--text);
+            border: 1px solid var(--glass-border);
+            border-radius: 8px;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            box-shadow: var(--glass-shadow);
+        }
+        .setting-btn:hover, .source-code-btn:hover {
+            background: var(--btn-hover);
+            transform: translateY(-3px);
+            border-color: var(--text);
+        }
+        /* 设置面板（默认隐藏，淡入淡出） */
+        .setting-panel {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            z-index: 100;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: all 0.5s ease;
+        }
+        .setting-panel.show {
+            opacity: 1;
+            pointer-events: all;
+        }
+        .setting-panel h2 {
+            font-size: 2rem;
+            margin-bottom: 2rem;
+            text-shadow: var(--text-shadow);
+        }
+        .mode-list {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        .mode-item {
+            width: 180px;
+            height: 120px;
+            border-radius: 12px;
+            background: var(--glass-bg);
+            border: 2px solid var(--glass-border);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: var(--glass-shadow);
+        }
+        .mode-item.active {
+            border-color: var(--text);
+            background: var(--btn-hover);
+        }
+        .mode-item:hover {
+            transform: translateY(-5px);
+            border-color: var(--text);
+        }
+        .mode-icon {
+            font-size: 1.8rem;
+            margin-bottom: 0.5rem;
+        }
+        .close-setting {
+            margin-top: 1rem;
+            padding: 0.8rem 2rem;
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 8px;
+            color: var(--text);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .close-setting:hover {
+            background: var(--btn-hover);
+            border-color: var(--text);
+        }
+        /* 响应式适配 */
+        @media (max-width: 600px) {
+            .clock {
+                font-size: 4rem;
+            }
+            .shortcut-card {
+                width: 100px;
+                height: 100px;
+            }
+            .setting-btn, .source-code-btn {
+                padding: 0.6rem 1rem;
+                font-size: 0.9rem;
+            }
+            .bottom-btns {
+                bottom: 15px;
+                padding: 0 15px;
+            }
+            .mode-list {
+                grid-template-columns: 1fr;
+            }
+            .mode-item {
+                width: 220px;
+            }
+            .setting-panel h2 {
+                font-size: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body class="wallpaper">
+    <!-- 壁纸模式背景图 -->
+    <div class="dynamic-bg"></div>
+
+    <!-- 数字时钟 -->
+    <div class="clock" id="digital-clock">00:00:00</div>
+
+    <!-- 搜索框（必应搜索） -->
+    <div class="search-box">
+        <input type="text" id="search-input" placeholder="输入内容按回车搜索...">
+        <button class="search-btn" onclick="search()">🔍</button>
+    </div>
+
+    <!-- 快捷入口 -->
+    <div class="shortcut-group">
+        <a href="index.html" class="shortcut-card">
+            <div class="shortcut-icon">🏠</div>
+            <div class="shortcut-text">我的主站</div>
+        </a>
+        <a href="games.html" class="shortcut-card">
+            <div class="shortcut-icon">🎮</div>
+            <div class="shortcut-text">游戏厅</div>
+        </a>
+        <a href="https://github.com/leocker-proplus" target="_blank" class="shortcut-card">
+            <div class="shortcut-icon">💻</div>
+            <div class="shortcut-text">GitHub</div>
+        </a>
+        <a href="https://cn.bing.com" target="_blank" class="shortcut-card">
+            <div class="shortcut-icon">📚</div>
+            <div class="shortcut-text">必应</div>
+        </a>
+    </div>
+
+    <!-- 底部 by GitHub -->
+    <div class="footer">
+        <p>by GitHub</p>
+    </div>
+
+    <!-- 底部功能按钮 -->
+    <div class="bottom-btns">
+        <button class="setting-btn" onclick="openSetting()">设置</button>
+        <a href="https://github.com/leocker-proplus/leocker-proplus.github.io" target="_blank" class="source-code-btn">查看源代码</a>
+    </div>
+
+    <!-- 设置面板 -->
+    <div class="setting-panel" id="settingPanel">
+        <h2>选择显示模式</h2>
+        <div class="mode-list">
+            <div class="mode-item" onclick="setMode('light')" id="modeLight">
+                <div class="mode-icon">☀️</div>
+                <div class="mode-name">亮色模式</div>
+            </div>
+            <div class="mode-item" onclick="setMode('dark')" id="modeDark">
+                <div class="mode-icon">🌙</div>
+                <div class="mode-name">暗色模式</div>
+            </div>
+            <div class="mode-item active" onclick="setMode('wallpaper')" id="modeWallpaper">
+                <div class="mode-icon">🖼️</div>
+                <div class="mode-name">壁纸模式</div>
+            </div>
+            <div class="mode-item" onclick="setMode('minimal')" id="modeMinimal">
+                <div class="mode-icon">⚡</div>
+                <div class="mode-name">极简模式</div>
+            </div>
+        </div>
+        <button class="close-setting" onclick="closeSetting()">关闭</button>
+    </div>
+
+    <script>
+        // 获取元素
+        const body = document.body;
+        const settingPanel = document.getElementById('settingPanel');
+        const modeItems = {
+            light: document.getElementById('modeLight'),
+            dark: document.getElementById('modeDark'),
+            wallpaper: document.getElementById('modeWallpaper'),
+            minimal: document.getElementById('modeMinimal')
+        };
+        const clockEl = document.getElementById('digital-clock');
+        const searchInput = document.getElementById('search-input');
+
+        // 初始化模式（从本地存储读取，默认壁纸模式）
+        function initMode() {
+            const savedMode = localStorage.getItem('newtabMode') || 'wallpaper';
+            setMode(savedMode, false); // false表示不重新存储
+        }
+
+        // 设置显示模式
+        function setMode(mode, isSave = true) {
+            // 更新body类名
+            body.className = mode;
+            // 更新激活状态
+            Object.keys(modeItems).forEach(key => {
+                modeItems[key].classList.remove('active');
+            });
+            modeItems[mode].classList.add('active');
+            // 更新搜索框占位符
+            const placeholders = {
+                light: '输入内容按回车搜索...',
+                dark: '输入内容按回车搜索...',
+                wallpaper: '输入内容按回车搜索...',
+                minimal: '搜索...'
+            };
+            searchInput.placeholder = placeholders[mode];
+            // 本地存储记忆
+            if (isSave) {
+                localStorage.setItem('newtabMode', mode);
+            }
+            // 极简模式调整时钟大小
+            if (mode === 'minimal') {
+                clockEl.style.fontSize = '7rem';
+            } else {
+                clockEl.style.fontSize = window.innerWidth <= 600 ? '4rem' : '6rem';
+            }
+        }
+
+        // 打开设置面板
+        function openSetting() {
+            settingPanel.classList.add('show');
+        }
+
+        // 关闭设置面板
+        function closeSetting() {
+            settingPanel.classList.remove('show');
+        }
+
+        // 点击面板外部关闭设置
+        document.addEventListener('click', (e) => {
+            if (e.target === settingPanel) {
+                closeSetting();
+            }
+        });
+
+        // 数字时钟更新
+        function updateClock() {
+            const now = new Date();
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            const seconds = String(now.getSeconds()).padStart(2, '0');
+            clockEl.textContent = `${hours}:${minutes}:${seconds}`;
+        }
+
+        // 搜索功能（必应搜索）
+        function search() {
+            const keyword = searchInput.value.trim();
+            if (keyword) {
+                window.open(`https://cn.bing.com/search?q=${encodeURIComponent(keyword)}`, '_blank');
+                searchInput.value = '';
+            }
+        }
+
+        // 响应式调整时钟大小
+        function resizeClock() {
+            if (body.className !== 'minimal') {
+                clockEl.style.fontSize = window.innerWidth <= 600 ? '4rem' : '6rem';
+            }
+        }
+
+        // 事件监听
+        searchInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') search();
+        });
+        window.addEventListener('resize', resizeClock);
+
+        // 初始化
+        initMode();
+        updateClock();
+        setInterval(updateClock, 1000);
+        resizeClock();
     </script>
 </body>
 </html>
