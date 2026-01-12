@@ -10,7 +10,7 @@
             padding: 0;
             box-sizing: border-box;
         }
-        /* 粒子背景容器 - 纯原生样式 */
+        /* 粒子背景容器 */
         #particle-bg {
             position: fixed;
             top: 0;
@@ -26,31 +26,31 @@
             text-align: center;
             padding: 4rem 2rem;
             border-radius: 16px;
-            background: rgba(255, 255, 255, 0.9);
+            background: rgba(255, 255, 255, 0.85);
             box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
             margin: 0 auto;
-            max-width: 500px;
+            max-width: 400px;
             opacity: 0;
             animation: fadeIn 1.2s ease forwards 0.3s;
         }
         h1 {
             font-size: 2.8rem;
             color: #2d3748;
-            margin-bottom: 1.2rem;
+            margin-bottom: 2rem;
             transition: all 0.3s ease;
         }
         h1:hover {
             color: #2b6cb0;
             transform: scale(1.05);
         }
-        p {
-            font-size: 1.1rem;
-            color: #4a5568;
-            margin: 0.8rem 0;
+        /* 按钮组：上下排列 */
+        .btn-group {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            margin-bottom: 3rem;
         }
-        a {
-            display: inline-block;
-            margin-top: 1.8rem;
+        .btn {
             padding: 0.9rem 2rem;
             color: #fff;
             background: #2b6cb0;
@@ -58,14 +58,21 @@
             text-decoration: none;
             transition: all 0.3s ease;
         }
-        a:hover {
+        .btn:hover {
             background: #2c5282;
             transform: translateY(-3px);
             box-shadow: 0 6px 15px rgba(43, 108, 176, 0.4);
         }
+        /* 游戏按钮特殊配色 */
+        .game-btn {
+            background: #e53e3e;
+        }
+        .game-btn:hover {
+            background: #c53030;
+            box-shadow: 0 6px 15px rgba(229, 62, 62, 0.4);
+        }
         .footer {
-            margin-top: 3rem;
-            font-size: 0.9rem;
+            font-size: 1rem;
             color: #718096;
         }
         @keyframes fadeIn {
@@ -75,25 +82,30 @@
     </style>
 </head>
 <body>
+    <!-- 粒子背景画布 -->
     <canvas id="particle-bg"></canvas>
 
     <div class="container">
         <h1>leocker-proplus</h1>
-        <p>纯 GitHub Pages 动态部署 ✔️</p>
-        <p>轻量粒子 · 流畅无卡顿</p>
-        <a href="https://github.com/leocker-proplus" target="_blank">我的 GitHub</a>
+        <!-- 按钮组：上下排列 -->
+        <div class="btn-group">
+            <a href="https://github.com/leocker-proplus" target="_blank" class="btn">我的 GitHub</a>
+            <a href="games.html" class="btn game-btn">进入游戏厅</a>
+        </div>
+        <!-- 底部仅保留 by GitHub -->
         <div class="footer">
-            <p>Powered by GitHub Pages</p>
+            <p>by GitHub</p>
         </div>
     </div>
 
-    <!-- 原生粒子动效 JS - 无外链 -->
+    <!-- 粒子动效 JS (原生无外链) -->
     <script>
         const canvas = document.getElementById('particle-bg');
         const ctx = canvas.getContext('2d');
         canvas.width = window.innerWidth;
         canvas.height = window.innerHeight;
 
+        // 粒子类
         class Particle {
             constructor() {
                 this.x = Math.random() * canvas.width;
@@ -106,6 +118,7 @@
             update() {
                 this.x += this.speedX;
                 this.y += this.speedY;
+                // 粒子超出边界后重置
                 if (this.x > canvas.width) this.x = 0;
                 if (this.x < 0) this.x = canvas.width;
                 if (this.y > canvas.height) this.y = 0;
@@ -119,12 +132,15 @@
             }
         }
 
+        // 创建粒子数组
         const particles = [];
         const particleCount = Math.min(100, Math.floor(canvas.width / 10));
+
         for (let i = 0; i < particleCount; i++) {
             particles.push(new Particle());
         }
 
+        // 动画循环
         function animate() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             particles.forEach(particle => {
@@ -135,6 +151,7 @@
         }
         animate();
 
+        // 窗口大小自适应
         window.addEventListener('resize', () => {
             canvas.width = window.innerWidth;
             canvas.height = window.innerHeight;
