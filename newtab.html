@@ -306,6 +306,30 @@
             text-shadow: var(--text-shadow);
             text-align: center;
         }
+        /* 打字机特效推广文字样式 */
+        .typing-promotion {
+            font-size: 0.9rem;
+            text-shadow: var(--text-shadow);
+            opacity: 0.9;
+            margin-bottom: 0.3rem;
+            text-align: center;
+            width: 100%;
+            height: 1.2rem; /* 固定高度防止布局抖动 */
+            line-height: 1.2rem;
+        }
+        .typing-cursor {
+            display: inline-block;
+            width: 8px;
+            height: 0.9rem;
+            background-color: var(--text);
+            margin-left: 2px;
+            animation: blink 0.7s infinite;
+            vertical-align: middle;
+        }
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0; }
+        }
         /* 底部信息 */
         .footer {
             font-size: 0.9rem;
@@ -442,6 +466,7 @@
         @media (max-width: 400px) {
             .clock { font-size: 3rem; }
             .content-container { min-width: 280px; }
+            .typing-promotion { font-size: 0.8rem; }
         }
         @media (max-width: 320px) {
             .clock { font-size: 2.5rem; }
@@ -492,7 +517,7 @@
             </div>
         </div>
 
-        <!-- 快捷入口（豆包图标改为泡泡框emoji 💬） -->
+        <!-- 快捷入口（豆包图标为泡泡框emoji 💬） -->
         <div class="shortcut-group">
             <a href="index.html" class="shortcut-card">
                 <div class="shortcut-icon">🏠</div>
@@ -516,6 +541,8 @@
             </a>
         </div>
 
+        <!-- 打字机特效推广文字 -->
+        <div class="typing-promotion" id="typingText"></div>
         <!-- 底部信息 -->
         <div class="footer">by GitHub</div>
     </div>
@@ -561,6 +588,7 @@
         const weekdayText = document.getElementById('weekday-text');
         const todoInput = document.getElementById('todo-input');
         const todoList = document.getElementById('todo-list');
+        const typingTextEl = document.getElementById('typingText');
 
         // 1. 初始化模式
         function initMode() {
@@ -661,7 +689,47 @@
             if (e.target === settingPanel) closeSetting();
         });
 
-        // 6. 事件监听与初始化
+        // 6. 打字机特效功能
+        const typingTexts = [
+            'Liquid Glass',
+            '小组件',
+            '好用的起始页',
+            '点击查看源代码了解一下吧'
+        ];
+        let currentTextIndex = 0;
+        let currentCharIndex = 0;
+        let isDeleting = false;
+        const typingSpeed = 150; // 输入速度（毫秒/字符）
+        const deletingSpeed = 80; // 删除速度（毫秒/字符）
+        const pauseTime = 2000; // 文字显示暂停时间（毫秒）
+
+        function typingEffect() {
+            const currentText = typingTexts[currentTextIndex];
+            const cursor = '<span class="typing-cursor"></span>';
+
+            if (!isDeleting && currentCharIndex < currentText.length) {
+                // 输入文字
+                typingTextEl.innerHTML = currentText.substring(0, currentCharIndex + 1) + cursor;
+                currentCharIndex++;
+                setTimeout(typingEffect, typingSpeed);
+            } else if (isDeleting && currentCharIndex > 0) {
+                // 删除文字
+                typingTextEl.innerHTML = currentText.substring(0, currentCharIndex - 1) + cursor;
+                currentCharIndex--;
+                setTimeout(typingEffect, deletingSpeed);
+            } else if (!isDeleting) {
+                // 输入完成，暂停后开始删除
+                isDeleting = true;
+                setTimeout(typingEffect, pauseTime);
+            } else {
+                // 删除完成，切换到下一句
+                isDeleting = false;
+                currentTextIndex = (currentTextIndex + 1) % typingTexts.length;
+                setTimeout(typingEffect, 500);
+            }
+        }
+
+        // 7. 事件监听与初始化
         searchInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') search(); });
         document.querySelector('.search-btn').addEventListener('click', search);
         window.addEventListener('resize', () => {
@@ -673,6 +741,7 @@
         updateTime();
         setInterval(updateTime, 1000);
         initTodo();
+        typingEffect(); // 启动打字机特效
     </script>
 </body>
 </html>
