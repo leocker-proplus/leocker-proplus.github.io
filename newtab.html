@@ -9,9 +9,9 @@
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: Arial, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
         }
-        /* 模式变量定义：亮色/暗色/壁纸/极简 */
+        /* Liquid Glass 核心变量：亮色/暗色/壁纸模式 */
         body.light {
             --bg: #f5f7fa;
             --text: #2d3748;
@@ -20,6 +20,7 @@
             --glass-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
             --text-shadow: none;
             --btn-hover: #e2e8f0;
+            --widget-bg: rgba(255, 255, 255, 0.9);
         }
         body.dark {
             --bg: #1a202c;
@@ -29,6 +30,7 @@
             --glass-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
             --text-shadow: 0 0 8px rgba(0, 0, 0, 0.5);
             --btn-hover: #4a5568;
+            --widget-bg: rgba(45, 55, 72, 0.9);
         }
         body.wallpaper {
             --bg: transparent;
@@ -38,40 +40,30 @@
             --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
             --text-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
             --btn-hover: rgba(255, 255, 255, 0.2);
+            --widget-bg: rgba(255, 255, 255, 0.1);
         }
-        body.minimal {
-            --bg: #ffffff;
-            --text: #1a202c;
-            --glass-bg: #ffffff;
-            --glass-border: #e2e8f0;
-            --glass-shadow: none;
-            --text-shadow: none;
-            --btn-hover: #f5f7fa;
-        }
-        /* 基础样式 */
+        /* 基础样式：Liquid Glass 通透质感 */
         body {
             background: var(--bg);
             color: var(--text);
             min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            padding: 2rem 1rem;
+            width: 100%;
             position: relative;
-            overflow: hidden;
+            overflow-x: hidden;
+            overflow-y: auto;
             transition: all 0.5s ease;
+            padding: 2rem 1rem 80px;
         }
-        /* 壁纸模式背景图 */
+        /* 壁纸模式背景 */
         .dynamic-bg {
             position: fixed;
             top: 0;
             left: 0;
-            width: 120%;
-            height: 120%;
+            width: 100%;
+            height: 100%;
             background: url('https://picsum.photos/id/1018/1920/1080') no-repeat center center;
             background-size: cover;
-            filter: blur(4px);
+            filter: blur(8px);
             z-index: -2;
             opacity: 0;
             transition: opacity 0.5s ease;
@@ -79,28 +71,45 @@
         body.wallpaper .dynamic-bg {
             opacity: 1;
         }
-        /* 数字时钟样式 */
+        /* 核心内容容器：优化居中，限制最小宽度，防止小窗挤压 */
+        .content-container {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            max-width: 1000px;
+            min-width: 300px; /* 新增：设置最小宽度，适配小窗口 */
+            padding: 0 1rem; /* 新增：左右内边距，防止内容贴边 */
+            z-index: 1;
+        }
+        /* 时钟样式：核心修复小窗显示问题，多档位响应式字号 */
         .clock {
             font-size: 6rem;
-            font-weight: bold;
-            margin-bottom: 2rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
             text-shadow: var(--text-shadow);
-            z-index: 1;
-            transition: all 0.5s ease;
+            text-align: center;
+            transition: all 0.3s ease;
+            width: 100%; /* 新增：宽度100%，配合文字换行 */
+            word-break: keep-all; /* 新增：保持数字连在一起，不拆分 */
         }
-        /* 搜索框样式 */
+        /* 搜索框样式：Liquid Glass 质感 */
         .search-box {
             width: 100%;
             max-width: 600px;
-            margin-bottom: 3rem;
+            margin-bottom: 2rem;
             position: relative;
-            z-index: 1;
         }
         #search-input {
             width: 100%;
-            padding: 1rem 1.5rem;
+            padding: 1rem 40px 1rem 20px;
             border: none;
-            border-radius: 50px;
+            border-radius: 30px;
             font-size: 1rem;
             background: var(--glass-bg);
             backdrop-filter: blur(12px);
@@ -108,19 +117,22 @@
             outline: none;
             border: 1px solid var(--glass-border);
             box-shadow: var(--glass-shadow);
-            transition: all 0.5s ease;
+            transition: all 0.3s ease;
+        }
+        #search-input:hover {
+            border-color: rgba(255, 255, 255, 0.3);
+        }
+        #search-input:focus {
+            border-color: var(--text);
+            opacity: 0.95;
         }
         #search-input::placeholder {
             color: var(--text);
             opacity: 0.7;
         }
-        #search-input:focus {
-            border-color: var(--text);
-            opacity: 0.9;
-        }
         .search-btn {
             position: absolute;
-            right: 15px;
+            right: 12px;
             top: 50%;
             transform: translateY(-50%);
             background: none;
@@ -131,22 +143,141 @@
             z-index: 2;
             text-shadow: var(--text-shadow);
         }
-        /* 快捷入口样式（极简模式隐藏） */
+        /* 小组件区域：网格布局 */
+        .widget-group {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1.5rem;
+            width: 100%;
+            max-width: 800px;
+            margin-bottom: 2rem;
+        }
+        /* 小组件通用样式：Liquid Glass 质感 */
+        .widget {
+            background: var(--widget-bg);
+            backdrop-filter: blur(12px);
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+            padding: 1.2rem;
+            box-shadow: var(--glass-shadow);
+            transition: all 0.3s ease;
+            min-width: 200px;
+        }
+        .widget:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.15);
+        }
+        .widget-title {
+            font-size: 0.9rem;
+            color: var(--text);
+            opacity: 0.8;
+            margin-bottom: 0.8rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .widget-content {
+            font-size: 1.5rem;
+            font-weight: 500;
+        }
+        /* 日期小组件 */
+        #date-widget {
+            display: flex;
+            flex-direction: column;
+        }
+        #date-text {
+            font-size: 1.2rem;
+            margin-bottom: 0.3rem;
+        }
+        #weekday-text {
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+        /* 天气小组件 */
+        #weather-widget {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .weather-info {
+            display: flex;
+            flex-direction: column;
+        }
+        #weather-temp {
+            font-size: 1.8rem;
+            font-weight: 600;
+        }
+        #weather-desc {
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+        #weather-icon {
+            font-size: 2.5rem;
+        }
+        /* 待办清单小组件 */
+        #todo-widget {
+            display: flex;
+            flex-direction: column;
+        }
+        #todo-input {
+            width: 100%;
+            padding: 0.6rem 0.8rem;
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 8px;
+            color: var(--text);
+            outline: none;
+            font-size: 0.9rem;
+            margin-bottom: 0.8rem;
+            backdrop-filter: blur(8px);
+        }
+        #todo-input::placeholder {
+            color: var(--text);
+            opacity: 0.6;
+        }
+        #todo-list {
+            list-style: none;
+            max-height: 80px;
+            overflow-y: auto;
+        }
+        #todo-list li {
+            font-size: 0.9rem;
+            padding: 0.4rem 0;
+            border-bottom: 1px solid var(--glass-border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        #todo-list li:last-child {
+            border-bottom: none;
+        }
+        .todo-text {
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .todo-text.completed {
+            text-decoration: line-through;
+            opacity: 0.5;
+        }
+        .todo-delete {
+            cursor: pointer;
+            opacity: 0.6;
+            transition: all 0.2s ease;
+        }
+        .todo-delete:hover {
+            opacity: 1;
+        }
+        /* 快捷入口样式 */
         .shortcut-group {
             display: flex;
             gap: 1.5rem;
             flex-wrap: wrap;
             justify-content: center;
-            margin-bottom: 2rem;
-            z-index: 1;
-            transition: all 0.5s ease;
-        }
-        body.minimal .shortcut-group {
-            display: none;
+            margin-bottom: 1rem;
         }
         .shortcut-card {
-            width: 120px;
-            height: 120px;
+            width: 100px;
+            height: 100px;
             border-radius: 16px;
             background: var(--glass-bg);
             backdrop-filter: blur(12px);
@@ -163,38 +294,38 @@
         .shortcut-card:hover {
             transform: translateY(-5px);
             background: var(--btn-hover);
-            border-color: var(--text);
-            opacity: 0.9;
+            border-color: rgba(255, 255, 255, 0.4);
         }
         .shortcut-icon {
-            font-size: 2.5rem;
+            font-size: 2rem;
             margin-bottom: 0.5rem;
             text-shadow: var(--text-shadow);
         }
         .shortcut-text {
+            font-size: 0.8rem;
+            text-shadow: var(--text-shadow);
+            text-align: center;
+        }
+        /* 底部信息 */
+        .footer {
             font-size: 0.9rem;
             text-shadow: var(--text-shadow);
+            opacity: 0.8;
+            margin-top: 0.5rem;
+            text-align: center;
+            width: 100%;
         }
-        /* 底部 by GitHub（极简模式隐藏） */
-        .footer {
-            font-size: 1rem;
-            margin-top: auto;
-            z-index: 1;
-            text-shadow: var(--text-shadow);
-            transition: all 0.5s ease;
-        }
-        body.minimal .footer {
-            display: none;
-        }
-        /* 功能按钮：设置 + 源代码 */
+        /* 底部功能按钮 */
         .bottom-btns {
             position: fixed;
             bottom: 20px;
+            left: 0;
             width: 100%;
             display: flex;
             justify-content: space-between;
             padding: 0 20px;
             z-index: 99;
+            height: 48px;
         }
         .setting-btn, .source-code-btn {
             padding: 0.8rem 1.2rem;
@@ -207,13 +338,14 @@
             text-decoration: none;
             transition: all 0.3s ease;
             box-shadow: var(--glass-shadow);
+            white-space: nowrap;
         }
         .setting-btn:hover, .source-code-btn:hover {
             background: var(--btn-hover);
             transform: translateY(-3px);
-            border-color: var(--text);
+            border-color: rgba(255, 255, 255, 0.3);
         }
-        /* 设置面板（默认隐藏，淡入淡出） */
+        /* 设置面板 */
         .setting-panel {
             position: fixed;
             top: 0;
@@ -230,6 +362,7 @@
             opacity: 0;
             pointer-events: none;
             transition: all 0.5s ease;
+            padding: 2rem;
         }
         .setting-panel.show {
             opacity: 1;
@@ -239,15 +372,17 @@
             font-size: 2rem;
             margin-bottom: 2rem;
             text-shadow: var(--text-shadow);
+            text-align: center;
         }
         .mode-list {
             display: grid;
-            grid-template-columns: repeat(2, 1fr);
+            grid-template-columns: repeat(3, 1fr);
             gap: 1.5rem;
             margin-bottom: 2rem;
+            max-width: 500px;
         }
         .mode-item {
-            width: 180px;
+            width: 140px;
             height: 120px;
             border-radius: 12px;
             background: var(--glass-bg);
@@ -286,71 +421,96 @@
             background: var(--btn-hover);
             border-color: var(--text);
         }
-        /* 响应式适配 */
+        /* 响应式适配：多档位优化时钟字号，彻底解决小窗显示问题 */
+        @media (max-width: 800px) {
+            .clock { font-size: 5rem; }
+            .widget-group { grid-template-columns: repeat(2, 1fr); }
+        }
         @media (max-width: 600px) {
-            .clock {
-                font-size: 4rem;
-            }
-            .shortcut-card {
-                width: 100px;
-                height: 100px;
-            }
-            .setting-btn, .source-code-btn {
-                padding: 0.6rem 1rem;
-                font-size: 0.9rem;
-            }
-            .bottom-btns {
-                bottom: 15px;
-                padding: 0 15px;
-            }
-            .mode-list {
-                grid-template-columns: 1fr;
-            }
-            .mode-item {
-                width: 220px;
-            }
-            .setting-panel h2 {
-                font-size: 1.5rem;
-            }
+            .clock { font-size: 4rem; }
+            .widget-group { grid-template-columns: 1fr; max-width: 300px; }
+            .shortcut-card { width: 80px; height: 80px; }
+            .setting-btn, .source-code-btn { padding: 0.6rem 1rem; font-size: 0.9rem; }
+            .bottom-btns { bottom: 15px; padding: 0 15px; }
+            .mode-list { grid-template-columns: repeat(2, 1fr); }
+            .mode-item { width: 120px; }
+            .setting-panel h2 { font-size: 1.5rem; }
+        }
+        @media (max-width: 400px) {
+            .clock { font-size: 3rem; } /* 超小窗口再缩小时钟 */
+            .content-container { min-width: 280px; }
+        }
+        @media (max-width: 320px) {
+            .clock { font-size: 2.5rem; } /* 极限小窗口最终适配 */
         }
     </style>
 </head>
 <body class="wallpaper">
-    <!-- 壁纸模式背景图 -->
+    <!-- 壁纸背景 -->
     <div class="dynamic-bg"></div>
 
-    <!-- 数字时钟 -->
-    <div class="clock" id="digital-clock">00:00:00</div>
+    <!-- 核心内容容器 -->
+    <div class="content-container">
+        <!-- 时钟 -->
+        <div class="clock" id="digital-clock">00:00:00</div>
 
-    <!-- 搜索框（必应搜索） -->
-    <div class="search-box">
-        <input type="text" id="search-input" placeholder="输入内容按回车搜索...">
-        <button class="search-btn" onclick="search()">🔍</button>
-    </div>
+        <!-- 搜索框 -->
+        <div class="search-box">
+            <input type="text" id="search-input" placeholder="输入内容按回车搜索...">
+            <button class="search-btn">🔍</button>
+        </div>
 
-    <!-- 快捷入口 -->
-    <div class="shortcut-group">
-        <a href="index.html" class="shortcut-card">
-            <div class="shortcut-icon">🏠</div>
-            <div class="shortcut-text">我的主站</div>
-        </a>
-        <a href="games.html" class="shortcut-card">
-            <div class="shortcut-icon">🎮</div>
-            <div class="shortcut-text">游戏厅</div>
-        </a>
-        <a href="https://github.com/leocker-proplus" target="_blank" class="shortcut-card">
-            <div class="shortcut-icon">💻</div>
-            <div class="shortcut-text">GitHub</div>
-        </a>
-        <a href="https://cn.bing.com" target="_blank" class="shortcut-card">
-            <div class="shortcut-icon">📚</div>
-            <div class="shortcut-text">必应</div>
-        </a>
-    </div>
+        <!-- 小组件区域 -->
+        <div class="widget-group">
+            <!-- 日期小组件 -->
+            <div class="widget" id="date-widget">
+                <div class="widget-title">📅 今日日期</div>
+                <div class="widget-content">
+                    <div id="date-text">2025年1月1日</div>
+                    <div id="weekday-text">星期三</div>
+                </div>
+            </div>
 
-    <!-- 底部 by GitHub -->
-    <div class="footer">
-        <p>by GitHub</p>
+            <!-- 天气小组件（模拟数据） -->
+            <div class="widget" id="weather-widget">
+                <div class="widget-title">🌤️ 今日天气</div>
+                <div class="weather-info">
+                    <div id="weather-temp">22℃</div>
+                    <div id="weather-desc">晴转多云</div>
+                </div>
+                <div id="weather-icon">☀️</div>
+            </div>
+
+            <!-- 待办清单小组件 -->
+            <div class="widget" id="todo-widget">
+                <div class="widget-title">✅ 待办清单</div>
+                <input type="text" id="todo-input" placeholder="输入新待办...">
+                <ul id="todo-list"></ul>
+            </div>
+        </div>
+
+        <!-- 快捷入口 -->
+        <div class="shortcut-group">
+            <a href="index.html" class="shortcut-card">
+                <div class="shortcut-icon">🏠</div>
+                <div class="shortcut-text">我的主站</div>
+            </a>
+            <a href="games.html" class="shortcut-card">
+                <div class="shortcut-icon">🎮</div>
+                <div class="shortcut-text">游戏厅</div>
+            </a>
+            <a href="https://github.com/leocker-proplus" target="_blank" class="shortcut-card">
+                <div class="shortcut-icon">💻</div>
+                <div class="shortcut-text">GitHub</div>
+            </a>
+            <a href="https://cn.bing.com" target="_blank" class="shortcut-card">
+                <div class="shortcut-icon">📚</div>
+                <div class="shortcut-text">必应</div>
+            </a>
+        </div>
+
+        <!-- 底部信息 -->
+        <div class="footer">by GitHub</div>
     </div>
 
     <!-- 底部功能按钮 -->
@@ -375,10 +535,6 @@
                 <div class="mode-icon">🖼️</div>
                 <div class="mode-name">壁纸模式</div>
             </div>
-            <div class="mode-item" onclick="setMode('minimal')" id="modeMinimal">
-                <div class="mode-icon">⚡</div>
-                <div class="mode-name">极简模式</div>
-            </div>
         </div>
         <button class="close-setting" onclick="closeSetting()">关闭</button>
     </div>
@@ -390,100 +546,126 @@
         const modeItems = {
             light: document.getElementById('modeLight'),
             dark: document.getElementById('modeDark'),
-            wallpaper: document.getElementById('modeWallpaper'),
-            minimal: document.getElementById('modeMinimal')
+            wallpaper: document.getElementById('modeWallpaper')
         };
         const clockEl = document.getElementById('digital-clock');
         const searchInput = document.getElementById('search-input');
+        const dateText = document.getElementById('date-text');
+        const weekdayText = document.getElementById('weekday-text');
+        const todoInput = document.getElementById('todo-input');
+        const todoList = document.getElementById('todo-list');
 
-        // 初始化模式（从本地存储读取，默认壁纸模式）
+        // 1. 初始化模式
         function initMode() {
-            const savedMode = localStorage.getItem('newtabMode') || 'wallpaper';
-            setMode(savedMode, false); // false表示不重新存储
+            const savedMode = localStorage.getItem('liquidMode') || 'wallpaper';
+            setMode(savedMode, false);
         }
 
-        // 设置显示模式
         function setMode(mode, isSave = true) {
-            // 更新body类名
             body.className = mode;
-            // 更新激活状态
-            Object.keys(modeItems).forEach(key => {
-                modeItems[key].classList.remove('active');
-            });
+            Object.keys(modeItems).forEach(key => modeItems[key].classList.remove('active'));
             modeItems[mode].classList.add('active');
-            // 更新搜索框占位符
-            const placeholders = {
-                light: '输入内容按回车搜索...',
-                dark: '输入内容按回车搜索...',
-                wallpaper: '输入内容按回车搜索...',
-                minimal: '搜索...'
-            };
-            searchInput.placeholder = placeholders[mode];
-            // 本地存储记忆
-            if (isSave) {
-                localStorage.setItem('newtabMode', mode);
-            }
-            // 极简模式调整时钟大小
-            if (mode === 'minimal') {
-                clockEl.style.fontSize = '7rem';
-            } else {
-                clockEl.style.fontSize = window.innerWidth <= 600 ? '4rem' : '6rem';
-            }
+            if (isSave) localStorage.setItem('liquidMode', mode);
         }
 
-        // 打开设置面板
-        function openSetting() {
-            settingPanel.classList.add('show');
-        }
-
-        // 关闭设置面板
-        function closeSetting() {
-            settingPanel.classList.remove('show');
-        }
-
-        // 点击面板外部关闭设置
-        document.addEventListener('click', (e) => {
-            if (e.target === settingPanel) {
-                closeSetting();
-            }
-        });
-
-        // 数字时钟更新
-        function updateClock() {
+        // 2. 时钟与日期更新
+        function updateTime() {
             const now = new Date();
+            // 更新时钟
             const hours = String(now.getHours()).padStart(2, '0');
             const minutes = String(now.getMinutes()).padStart(2, '0');
             const seconds = String(now.getSeconds()).padStart(2, '0');
             clockEl.textContent = `${hours}:${minutes}:${seconds}`;
+
+            // 更新日期
+            const year = now.getFullYear();
+            const month = String(now.getMonth() + 1).padStart(2, '0');
+            const day = String(now.getDate()).padStart(2, '0');
+            const weekdays = ['星期日', '星期一', '星期二', '星期三', '星期四', '星期五', '星期六'];
+            const weekday = weekdays[now.getDay()];
+            dateText.textContent = `${year}年${month}月${day}日`;
+            weekdayText.textContent = weekday;
         }
 
-        // 搜索功能（必应搜索）
+        // 3. 待办清单功能（本地存储记忆）
+        function initTodo() {
+            const savedTodos = JSON.parse(localStorage.getItem('todos')) || [];
+            savedTodos.forEach(todo => addTodoItem(todo.text, todo.completed));
+            
+            // 回车添加待办
+            todoInput.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' && todoInput.value.trim()) {
+                    addTodoItem(todoInput.value.trim(), false);
+                    todoInput.value = '';
+                    saveTodos();
+                }
+            });
+        }
+
+        function addTodoItem(text, completed) {
+            const li = document.createElement('li');
+            const todoText = document.createElement('span');
+            todoText.className = `todo-text ${completed ? 'completed' : ''}`;
+            todoText.textContent = text;
+            todoText.onclick = () => {
+                todoText.classList.toggle('completed');
+                saveTodos();
+            };
+
+            const deleteBtn = document.createElement('span');
+            deleteBtn.className = 'todo-delete';
+            deleteBtn.textContent = '×';
+            deleteBtn.onclick = () => {
+                li.remove();
+                saveTodos();
+            };
+
+            li.appendChild(todoText);
+            li.appendChild(deleteBtn);
+            todoList.appendChild(li);
+        }
+
+        function saveTodos() {
+            const todos = [];
+            document.querySelectorAll('#todo-list li').forEach(li => {
+                todos.push({
+                    text: li.querySelector('.todo-text').textContent,
+                    completed: li.querySelector('.todo-text').classList.contains('completed')
+                });
+            });
+            localStorage.setItem('todos', JSON.stringify(todos));
+        }
+
+        // 4. 搜索功能
         function search() {
             const keyword = searchInput.value.trim();
             if (keyword) {
-                window.open(`https://cn.bing.com/search?q=${encodeURIComponent(keyword)}`, '_blank');
+                const isUrl = /^https?:\/\/|^www\.|^\w+\.\w+$/.test(keyword);
+                const targetUrl = isUrl ? (keyword.startsWith('http') ? keyword : `https://${keyword}`) : `https://cn.bing.com/search?q=${encodeURIComponent(keyword)}`;
+                window.open(targetUrl, '_blank');
                 searchInput.value = '';
             }
         }
 
-        // 响应式调整时钟大小
-        function resizeClock() {
-            if (body.className !== 'minimal') {
-                clockEl.style.fontSize = window.innerWidth <= 600 ? '4rem' : '6rem';
-            }
-        }
-
-        // 事件监听
-        searchInput.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter') search();
+        // 5. 设置面板交互
+        function openSetting() { settingPanel.classList.add('show'); }
+        function closeSetting() { settingPanel.classList.remove('show'); }
+        document.addEventListener('click', (e) => {
+            if (e.target === settingPanel) closeSetting();
         });
-        window.addEventListener('resize', resizeClock);
 
-        // 初始化
+        // 6. 事件监听与初始化
+        searchInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') search(); });
+        document.querySelector('.search-btn').addEventListener('click', search);
+        window.addEventListener('resize', () => {
+            document.querySelector('.content-container').style.transform = 'translate(-50%, -50%)';
+        });
+
+        // 初始化所有功能
         initMode();
-        updateClock();
-        setInterval(updateClock, 1000);
-        resizeClock();
+        updateTime();
+        setInterval(updateTime, 1000);
+        initTodo();
     </script>
 </body>
 </html>
