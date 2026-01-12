@@ -330,6 +330,30 @@
             0%, 100% { opacity: 1; }
             50% { opacity: 0; }
         }
+        /* 重播按钮样式 */
+        .replay-btn {
+            background: var(--glass-bg);
+            backdrop-filter: blur(12px);
+            border: 1px solid var(--glass-border);
+            border-radius: 8px;
+            color: var(--text);
+            padding: 0.3rem 0.8rem;
+            font-size: 0.8rem;
+            cursor: pointer;
+            opacity: 0; /* 初始隐藏 */
+            pointer-events: none; /* 初始不可点击 */
+            transition: all 0.3s ease;
+            margin-bottom: 0.3rem;
+            box-shadow: var(--glass-shadow);
+        }
+        .replay-btn.show {
+            opacity: 0.9;
+            pointer-events: all; /* 显示后可点击 */
+        }
+        .replay-btn:hover {
+            background: var(--btn-hover);
+            border-color: rgba(255, 255, 255, 0.4);
+        }
         /* 底部信息 */
         .footer {
             font-size: 0.9rem;
@@ -465,11 +489,7 @@
         }
         @media (max-width: 400px) {
             .clock { font-size: 3rem; }
-            .content-container { min-width: 280px; }
             .typing-promotion { font-size: 0.8rem; }
-        }
-        @media (max-width: 320px) {
-            .clock { font-size: 2.5rem; }
         }
     </style>
 </head>
@@ -541,8 +561,11 @@
             </a>
         </div>
 
-        <!-- 打字机特效推广文字 -->
-        <div class="typing-promotion" id="typingText"></div>
+        <!-- 打字机特效推广文字 + 重播按钮 -->
+        <div class="typing-container">
+            <div class="typing-promotion" id="typingText"></div>
+            <button class="replay-btn" id="replayBtn" onclick="replayTyping()">🔄 重播</button>
+        </div>
         <!-- 底部信息 -->
         <div class="footer">by GitHub</div>
     </div>
@@ -589,6 +612,7 @@
         const todoInput = document.getElementById('todo-input');
         const todoList = document.getElementById('todo-list');
         const typingTextEl = document.getElementById('typingText');
+        const replayBtn = document.getElementById('replayBtn');
 
         // 1. 初始化模式
         function initMode() {
@@ -614,7 +638,7 @@
 
             // 更新日期
             const year = now.getFullYear();
-            const month = String(now.getMonth() + 1).padStart(2, '0');
+            const month = String(now.getMonth()+1).padStart(2, '0');
             const day = String(now.getDate()).padStart(2, '0');
             const weekdays = ['星期日', '星期一', '星期二', '星期三', '星期四', '星期五', '星期六'];
             const weekday = weekdays[now.getDay()];
@@ -689,21 +713,26 @@
             if (e.target === settingPanel) closeSetting();
         });
 
-        // 6. 打字机特效功能
+        // 6. 打字机特效功能（新增第五段网址，播完停止+重播按钮）
         const typingTexts = [
             'Liquid Glass',
             '小组件',
             '好用的起始页',
-            '点击查看源代码了解一下吧'
+            '点击查看源代码了解一下吧',
+            '项目网址：https://leocker-proplus.github.io' // 新增第五段文字
         ];
         let currentTextIndex = 0;
         let currentCharIndex = 0;
         let isDeleting = false;
+        let isCompleted = false; // 标记是否全部播放完成
         const typingSpeed = 150; // 输入速度（毫秒/字符）
         const deletingSpeed = 80; // 删除速度（毫秒/字符）
         const pauseTime = 2000; // 文字显示暂停时间（毫秒）
+        let typingTimer = null; // 存储定时器ID，用于清除
 
         function typingEffect() {
+            if (isCompleted) return; // 全部播放完成则停止
+
             const currentText = typingTexts[currentTextIndex];
             const cursor = '<span class="typing-cursor"></span>';
 
@@ -711,22 +740,41 @@
                 // 输入文字
                 typingTextEl.innerHTML = currentText.substring(0, currentCharIndex + 1) + cursor;
                 currentCharIndex++;
-                setTimeout(typingEffect, typingSpeed);
+                typingTimer = setTimeout(typingEffect, typingSpeed);
             } else if (isDeleting && currentCharIndex > 0) {
                 // 删除文字
                 typingTextEl.innerHTML = currentText.substring(0, currentCharIndex - 1) + cursor;
                 currentCharIndex--;
-                setTimeout(typingEffect, deletingSpeed);
+                typingTimer = setTimeout(typingEffect, deletingSpeed);
             } else if (!isDeleting) {
                 // 输入完成，暂停后开始删除
                 isDeleting = true;
-                setTimeout(typingEffect, pauseTime);
+                typingTimer = setTimeout(typingEffect, pauseTime);
             } else {
                 // 删除完成，切换到下一句
                 isDeleting = false;
-                currentTextIndex = (currentTextIndex + 1) % typingTexts.length;
-                setTimeout(typingEffect, 500);
+                currentTextIndex++;
+                if (currentTextIndex >= typingTexts.length) {
+                    // 所有文字播放完成，停止并显示重播按钮
+                    isCompleted = true;
+                    typingTextEl.innerHTML = currentText + cursor; // 保留最后一段文字和光标
+                    replayBtn.classList.add('show'); // 显示重播按钮
+                    return;
+                }
+                typingTimer = setTimeout(typingEffect, 500);
             }
+        }
+
+        // 重播功能
+        function replayTyping() {
+            clearTimeout(typingTimer); // 清除现有定时器
+            currentTextIndex = 0;
+            currentCharIndex = 0;
+            isDeleting = false;
+            isCompleted = false;
+            replayBtn.classList.remove('show'); // 隐藏重播按钮
+            typingTextEl.innerHTML = ''; // 清空文字
+            typingEffect(); // 重新启动打字机特效
         }
 
         // 7. 事件监听与初始化
