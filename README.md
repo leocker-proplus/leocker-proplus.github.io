@@ -14,7 +14,7 @@
 
 ## 🚀 快速使用
 ### 在线访问
-直接打开项目地址即可体验：[https://leocker-proplus.github.io](https://leocker-proplus.github.io)
+直接打开项目地址即可体验：[https://leocker-proplus.github.io](https://leocker-proplus.github.io/newtab)
 
 ### 本地部署
 1. 克隆仓库到本地
