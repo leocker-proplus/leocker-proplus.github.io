@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>在线投票系统</title>
+    <title>在线统一投票</title>
     <style>
         *{margin:0;padding:0;box-sizing:border-box;font-family:Microsoft Yahei}
         body{min-height:100vh;background:#0a192f;color:#fff;overflow-x:hidden}
@@ -21,9 +21,9 @@
 <body>
 <div id="particles"></div>
 <div class="container">
-    <h1>人气投票</h1>
-    <div id="voteList"></div>
-    <a href="admin.html" class="admin-btn">进入后台管理</a>
+    <h1>集体投票通道</h1>
+    <div id="voteList">加载中...</div>
+    <a href="vote_admin.html" class="admin-btn">后台管理入口</a>
 </div>
 
 <script>
@@ -63,12 +63,18 @@ function animate(){
 }
 animate();
 
-// 投票数据
-let voteData = JSON.parse(localStorage.getItem('voteData')) || [
-    {name:"选项A",count:0},
-    {name:"选项B",count:0},
-    {name:"选项C",count:0}
-];
+// 全局GH JSON数据地址
+const dataUrl = "./vote.json";
+let voteData = [];
+
+// 读取数据
+async function getData(){
+    let res = await fetch(dataUrl);
+    voteData = await res.json();
+    renderVote();
+}
+
+// 渲染投票
 function renderVote(){
     let html='';
     let total=voteData.reduce((a,b)=>a+b.count,0);
@@ -79,19 +85,26 @@ function renderVote(){
             <div class="vote-name">${item.name}</div>
             <div class="vote-bar"><div class="vote-progress" style="width:${per}%"></div></div>
             <span>票数：${item.count} 占比${per}%</span>
-            <button class="btn" onclick="vote(${idx})">投票</button>
+            <button class="btn" onclick="submitVote(${idx})">提交投票</button>
         </div>
         `
     })
     document.getElementById('voteList').innerHTML=html;
 }
-function vote(idx){
+
+// 投票提交
+async function submitVote(idx){
     voteData[idx].count++;
-    localStorage.setItem('voteData',JSON.stringify(voteData));
-    renderVote();
-    alert("投票成功！");
+    await fetch(dataUrl,{
+        method:'PUT',
+        body:JSON.stringify(voteData,null,2)
+    });
+    alert("投票成功，所有人同步更新！");
+    getData();
 }
-renderVote();
+
+getData();
+setInterval(getData,3000);
 </script>
 </body>
 </html>
