@@ -13,17 +13,18 @@
 - 📱 全响应式设计，完美适配电脑/平板/手机等全尺寸设备
 - 💬 豆包快捷入口专属泡泡框emoji图标，视觉识别度高
 
-## 🚀 快速使用
-### 在线访问
+### 🚀 快速使用
+#### 在线访问
 直接打开项目地址即可体验：[https://leocker-proplus.github.io](https://leocker-proplus.github.io/newtab)
 
-### 本地部署
+#### 本地部署
 1. 克隆仓库到本地
+   
 `git clone https://github.com/leocker-proplus/leocker-proplus.github.io.git`
 
-2. 进入项目目录，直接打开 newtab.html 文件即可使用
+3. 进入项目目录，直接打开 newtab.html 文件即可使用
 
-3. 可将该页面设置为浏览器默认新标签页，日常使用更方便
+4. 可将该页面设置为浏览器默认新标签页，日常使用更方便
 
 📋 详细功能说明
 
