@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>在线统一投票</title>
+    <title>在线投票</title>
     <style>
         *{margin:0;padding:0;box-sizing:border-box;font-family:Microsoft Yahei}
         body{min-height:100vh;background:#0a192f;color:#fff;overflow-x:hidden}
@@ -23,7 +23,7 @@
 <div class="container">
     <h1>集体投票通道</h1>
     <div id="voteList">加载中...</div>
-    <a href="vote_admin.html" class="admin-btn">后台管理入口</a>
+    <a href="vote_admin.html" class="admin-btn">后台管理</a>
 </div>
 
 <script>
@@ -36,17 +36,13 @@ window.onresize=()=>w=canvas.width=innerWidth,h=canvas.height=innerHeight;
 let particles=[];
 class Particle{
     constructor(){
-        this.x=Math.random()*w;
-        this.y=Math.random()*h;
+        this.x=Math.random()*w;this.y=Math.random()*h;
         this.r=Math.random()*2+1;
-        this.sx=Math.random()*1-0.5;
-        this.sy=Math.random()*1-0.5;
+        this.sx=Math.random()*1-0.5;this.sy=Math.random()*1-0.5;
     }
     draw(){
-        ctx.beginPath();
-        ctx.arc(this.x,this.y,this.r,0,Math.PI*2);
-        ctx.fillStyle='rgba(100,255,218,0.6)';
-        ctx.fill();
+        ctx.beginPath();ctx.arc(this.x,this.y,this.r,0,Math.PI*2);
+        ctx.fillStyle='rgba(100,255,218,0.6)';ctx.fill();
     }
     update(){
         this.x+=this.sx;this.y+=this.sy;
@@ -56,55 +52,62 @@ class Particle{
     }
 }
 for(let i=0;i<80;i++)particles.push(new Particle());
-function animate(){
-    ctx.clearRect(0,0,w,h);
-    particles.forEach(p=>p.update());
-    requestAnimationFrame(animate);
-}
+function animate(){ctx.clearRect(0,0,w,h);particles.forEach(p=>p.update());requestAnimationFrame(animate);}
 animate();
 
-// 全局GH JSON数据地址
-const dataUrl = "./vote.json";
+// 配置 填写你的仓库
+const OWNER = "你的用户名";
+const REPO = "仓库名";
 let voteData = [];
 
-// 读取数据
-async function getData(){
-    let res = await fetch(dataUrl);
-    voteData = await res.json();
-    renderVote();
+// 读取投票数据
+async function getVote(){
+    let res = await fetch(`https://api.github.com/repos/${OWNER}/${REPO}/issues?labels=vote&state=all`);
+    let list = await res.json();
+    if(list.length===0){
+        voteData = [{name:"选项1",count:0},{name:"选项2",count:0},{name:"选项3",count:0}];
+    }else{
+        voteData = JSON.parse(list[0].body);
+    }
+    render();
 }
 
-// 渲染投票
-function renderVote(){
-    let html='';
-    let total=voteData.reduce((a,b)=>a+b.count,0);
+// 渲染页面
+function render(){
+    let html = "";
+    let total = voteData.reduce((a,b)=>a+b.count,0);
     voteData.forEach((item,idx)=>{
-        let per=total==0?0:(item.count/total*100).toFixed(1);
-        html+=`
+        let per = total==0?0:(item.count/total*100).toFixed(1);
+        html += `
         <div class="vote-item">
             <div class="vote-name">${item.name}</div>
             <div class="vote-bar"><div class="vote-progress" style="width:${per}%"></div></div>
             <span>票数：${item.count} 占比${per}%</span>
-            <button class="btn" onclick="submitVote(${idx})">提交投票</button>
-        </div>
-        `
-    })
-    document.getElementById('voteList').innerHTML=html;
+            <button class="btn" onclick="vote(${idx})">投票</button>
+        </div>`;
+    });
+    document.getElementById("voteList").innerHTML = html;
 }
 
 // 投票提交
-async function submitVote(idx){
+async function vote(idx){
     voteData[idx].count++;
-    await fetch(dataUrl,{
-        method:'PUT',
-        body:JSON.stringify(voteData,null,2)
+    alert("投票成功！");
+    render();
+    await fetch(`https://api.github.com/repos/${OWNER}/${REPO}/issues`,{
+        method:"POST",
+        headers:{"Content-Type":"application/json"},
+        body:JSON.stringify({
+            title:"投票数据",
+            body:JSON.stringify(voteData),
+            labels:["vote"]
+        })
     });
-    alert("投票成功，所有人同步更新！");
-    getData();
+    getVote();
 }
 
-getData();
-setInterval(getData,3000);
+getVote();
+setInterval(getVote,5000);
 </script>
 </body>
 </html>
