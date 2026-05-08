@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>投票后台管理</title>
+    <title>投票后台</title>
     <style>
         *{margin:0;padding:0;box-sizing:border-box;font-family:Microsoft Yahei}
         body{min-height:100vh;background:#0a192f;color:#fff}
@@ -20,26 +20,20 @@
 <body>
 <div id="particles"></div>
 <div class="container">
-    <h1>投票后台管理</h1>
+    <h1>投票管理后台</h1>
     <div class="box">
-        <h3>添加投票选项</h3>
-        <input type="text" id="optName" placeholder="输入选项名称">
-        <button onclick="addItem()">添加</button>
+        <h3>新增选项</h3>
+        <input type="text" id="name" placeholder="输入名称">
+        <button onclick="add()">添加</button>
     </div>
     <div class="box">
-        <h3>数据操作</h3>
-        <button onclick="clearAll()">清空全部票数</button>
-        <button onclick="downloadData()">导出数据</button>
+        <button onclick="reset()">清空票数</button>
     </div>
-    <div class="box">
-        <h3>当前投票列表</h3>
-        <div id="adminList">加载中...</div>
-    </div>
+    <div class="box"><div id="list"></div></div>
     <div class="back"><a href="vote.html">返回投票页</a></div>
 </div>
 
 <script>
-// 粒子背景
 const canvas = document.createElement('canvas');
 const ctx = canvas.getContext('2d');
 document.getElementById('particles').appendChild(canvas);
@@ -48,17 +42,13 @@ window.onresize=()=>w=canvas.width=innerWidth,h=canvas.height=innerHeight;
 let particles=[];
 class Particle{
     constructor(){
-        this.x=Math.random()*w;
-        this.y=Math.random()*h;
+        this.x=Math.random()*w;this.y=Math.random()*h;
         this.r=Math.random()*2+1;
-        this.sx=Math.random()*1-0.5;
-        this.sy=Math.random()*1-0.5;
+        this.sx=Math.random()*1-0.5;this.sy=Math.random()*1-0.5;
     }
     draw(){
-        ctx.beginPath();
-        ctx.arc(this.x,this.y,this.r,0,Math.PI*2);
-        ctx.fillStyle='rgba(100,255,218,0.6)';
-        ctx.fill();
+        ctx.beginPath();ctx.arc(this.x,this.y,this.r,0,Math.PI*2);
+        ctx.fillStyle='rgba(100,255,218,0.6)';ctx.fill();
     }
     update(){
         this.x+=this.sx;this.y+=this.sy;
@@ -68,67 +58,47 @@ class Particle{
     }
 }
 for(let i=0;i<80;i++)particles.push(new Particle());
-function animate(){
-    ctx.clearRect(0,0,w,h);
-    particles.forEach(p=>p.update());
-    requestAnimationFrame(animate);
-}
+function animate(){ctx.clearRect(0,0,w,h);particles.forEach(p=>p.update());requestAnimationFrame(animate);}
 animate();
 
-const dataUrl = "./vote.json";
-let listData = [];
+const OWNER = "你的用户名";
+const REPO = "仓库名";
+let data = [];
 
-async function loadData(){
-    let res = await fetch(dataUrl);
-    listData = await res.json();
-    renderAdmin();
+async function load(){
+    let res = await fetch(`https://api.github.com/repos/${OWNER}/${REPO}/issues?labels=vote`);
+    let arr = await res.json();
+    data = arr.length?JSON.parse(arr[0].body):[];
+    show();
 }
-
-function renderAdmin(){
-    let html='';
-    listData.forEach((item,idx)=>{
-        html+=`<p>${item.name} 票数：${item.count}
-        <button onclick="delItem(${idx})">删除</button></p>`
-    })
-    document.getElementById('adminList').innerHTML=html;
+function show(){
+    let html="";
+    data.forEach((item,i)=>{
+        html+=`<p>${item.name} 票数：${item.count} <button onclick="del(${i})">删除</button></p>`;
+    });
+    document.getElementById("list").innerHTML=html;
 }
-
 async function save(){
-    await fetch(dataUrl,{
-        method:'PUT',
-        body:JSON.stringify(listData,null,2)
-    })
-    loadData();
+    await fetch(`https://api.github.com/repos/${OWNER}/${REPO}/issues`,{
+        method:"POST",
+        headers:{"Content-Type":"application/json"},
+        body:JSON.stringify({title:"投票数据",body:JSON.stringify(data),labels:["vote"]})
+    });
+    load();
 }
-
-async function addItem(){
-    let val = document.getElementById('optName').value.trim();
-    if(!val)return;
-    listData.push({name:val,count:0});
-    save();
-    document.getElementById('optName').value='';
-}
-
-async function delItem(idx){
-    listData.splice(idx,1);
+function add(){
+    let n = document.getElementById("name").value.trim();
+    if(!n)return;
+    data.push({name:n,count:0});
     save();
 }
-
-async function clearAll(){
-    if(!confirm('确定清空所有票数？'))return;
-    listData.forEach(v=>v.count=0);
-    save();
+function del(i){
+    data.splice(i,1);save();
 }
-
-function downloadData(){
-    let blob = new Blob([JSON.stringify(listData,null,2)]);
-    let a = document.createElement('a');
-    a.href=URL.createObjectURL(blob);
-    a.download='投票统计.json';
-    a.click();
+function reset(){
+    data.forEach(v=>v.count=0);save();
 }
-
-loadData();
+load();
 </script>
 </body>
 </html>
