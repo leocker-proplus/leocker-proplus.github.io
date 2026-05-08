@@ -19,7 +19,7 @@
 
 ### 本地部署
 1. 克隆仓库到本地
-'git clone https://github.com/leocker-proplus/leocker-proplus.github.io.git'
+`git clone https://github.com/leocker-proplus/leocker-proplus.github.io.git`
 
 2. 进入项目目录，直接打开 newtab.html 文件即可使用
 
